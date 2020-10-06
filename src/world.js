@@ -6,7 +6,7 @@ function World(scene) {
     makr.World.call(this);
     this.game = false;
     this.componentRegister = utils.ComponentRegister;
-    this.System = System(scene);
+    this.System = new System(scene);
 }
 
 //  Extends the Phaser.Plugin template, setting up values we need
