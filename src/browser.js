@@ -18,12 +18,12 @@ var ECSPlugin = function(scene) {
     {
         scene.sys.events.once('boot', this.boot, this);
     }
-}
+};
 
 ECSPlugin.register = function(PluginManager)
 {
     PluginManager.register('ECS', ECSPlugin, 'ecs');
-}
+};
 
 //  Extends the Phaser.Plugin template, setting up values we need
 ECSPlugin.prototype = {
