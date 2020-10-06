@@ -2,9 +2,9 @@
 
 var makr = require('makr');
 
-function System() {
+function System(scene) {
     makr.IteratingSystem.call(this);
-    this.game = Phaser.ECS.game;
+    this.scene = scene;
 }
 
 System.prototype = Object.create(makr.IteratingSystem.prototype);

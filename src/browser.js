@@ -1,8 +1,5 @@
 var World = require('./world');
 
-var ECSWorld = new World();
-Phaser.ECS = ECSWorld;
-
 /**
  * @class Phaser.Plugin.ECS
  * @classdesc Phaser - ECS Plugin based on makrjs by ooflorent
@@ -10,27 +7,102 @@ Phaser.ECS = ECSWorld;
  * @constructor
  * @extends Phaser.Plugin
  *
- * @param {Phaser.Game} game - A reference to the currently running game.
- * @param {Any} parent - The object that owns this plugin, usually Phaser.PluginManager.
+ * @param {scene} scene - A reference to the currently running scene.
  */
-function ECS(game, parent) {
-    Phaser.Plugin.call(this, game, parent);
-    ECSWorld.game = game;
+var ECSPlugin = function(scene) {
+    this.scene = scene;
+    this.systems = scene.sys;
+    this.world = new World(scene);
+
+    if (!scene.sys.settings.isBooted)
+    {
+        scene.sys.events.once('boot', this.boot, this);
+    }
+}
+
+ECSPlugin.register = function(PluginManager)
+{
+    PluginManager.register('ECS', ECSPlugin, 'ecs');
 }
 
 //  Extends the Phaser.Plugin template, setting up values we need
-ECS.prototype = Object.create(Phaser.Plugin.prototype);
-ECS.prototype.constructor = ECS;
+ECSPlugin.prototype = {
+    boot: function()
+    {
+        var eventEmitter = this.systems.events;
+        eventEmitter.on('start', this.start, this);
 
-module.exports = ECS;
+        eventEmitter.on('preupdate', this.preUpdate, this);
+        eventEmitter.on('update', this.update, this);
+        eventEmitter.on('postupdate', this.postUpdate, this);
 
-ECS.prototype.init = function () {};
+        eventEmitter.on('pause', this.pause, this);
+        eventEmitter.on('resume', this.resume, this);
 
-ECS.prototype.update = function() {
-    ECSWorld.update(this.game.time.physicsElapsed);
-};
+        eventEmitter.on('sleep', this.sleep, this);
+        eventEmitter.on('wake', this.wake, this);
 
-ECS.prototype.destroy = function () {
-    Phaser.Plugin.prototype.destroy.apply(this, arguments);
-    // Do destruction of our own here
-};
+        eventEmitter.on('shutdown', this.shutdown, this);
+        eventEmitter.on('destroy', this.destroy, this);
+    },
+
+    //  Called when a Scene is started by the SceneManager. The Scene is now active, visible and running.
+    start: function ()
+    {
+    },
+
+    //  Called every Scene step - phase 1
+    preUpdate: function (time, delta)
+    {
+    },
+
+    //  Called every Scene step - phase 2
+    update: function (time, delta)
+    {
+        this.world.update(delta);
+    },
+
+    //  Called every Scene step - phase 3
+    postUpdate: function (time, delta)
+    {
+    },
+
+    //  Called when a Scene is paused. A paused scene doesn't have its Step run, but still renders.
+    pause: function ()
+    {
+    },
+
+    //  Called when a Scene is resumed from a paused state.
+    resume: function ()
+    {
+    },
+
+    //  Called when a Scene is put to sleep. A sleeping scene doesn't update or render, but isn't destroyed or shutdown. preUpdate events still fire.
+    sleep: function ()
+    {
+    },
+
+    //  Called when a Scene is woken from a sleeping state.
+    wake: function ()
+    {
+    },
+
+    //  Called when a Scene shuts down, it may then come back again later (which will invoke the 'start' event) but should be considered dormant.
+    shutdown: function ()
+    {
+
+    },
+
+    //  Called when a Scene is destroyed by the Scene Manager. There is no coming back from a destroyed Scene, so clear up all resources here.
+    destroy: function ()
+    {
+        this.shutdown();
+        delete this.world;
+        this.scene = undefined;
+    }
+
+}
+
+ECSPlugin.prototype.constructor = ECSPlugin;
+
+module.exports = ECSPlugin;
